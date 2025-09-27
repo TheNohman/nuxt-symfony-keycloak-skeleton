@@ -31,7 +31,6 @@ The application runs entirely in Docker containers:
 - `keycloak`: Identity provider with admin console
 - `postgres`: Primary database with multi-database setup
 - `redis`: Session storage and application cache
-- `nginx`: Reverse proxy (optional for dev, required for production)
 
 ### Key Configuration Files
 

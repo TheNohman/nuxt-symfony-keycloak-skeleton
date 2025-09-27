@@ -142,19 +142,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Nginx Reverse Proxy (optional for development, required for production)
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-      - keycloak
-    networks:
-      - app-network
 
 volumes:
   postgres_data:

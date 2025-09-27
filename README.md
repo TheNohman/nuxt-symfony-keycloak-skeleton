@@ -124,7 +124,6 @@ docker-compose exec postgres psql -U app_user -d app_db
 │   ├── composables/    # Composable functions
 │   └── server/         # Server-side API routes (BFF)
 ├── docker/             # Docker configuration
-│   ├── nginx/         # Nginx proxy config
 │   └── postgres/      # Database init scripts
 ├── docs/              # Documentation
 │   ├── ARCHITECTURE.md
