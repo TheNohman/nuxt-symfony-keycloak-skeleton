@@ -1,0 +1,49 @@
+{
+    # Enable FrankenPHP
+    frankenphp
+    # Enable Symfony worker mode for better performance
+    # Uncomment the line below when ready for production
+    # frankenphp {
+    #     worker ./public/index.php
+    # }
+}
+
+:80 {
+    # Document root
+    root * /app/public
+
+    # Enable PHP processing with FrankenPHP
+    php
+
+    # Handle Symfony routes
+    try_files {path} /index.php
+
+    # Enable gzip compression
+    encode gzip
+
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+
+    # Security headers
+    header {
+        # Remove server information
+        -Server
+        # Add security headers
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+
+    # Handle assets and static files
+    @static {
+        file
+        path *.css *.js *.png *.jpg *.jpeg *.gif *.svg *.ico *.woff *.woff2 *.ttf *.eot
+    }
+    handle @static {
+        header Cache-Control "public, max-age=31536000"
+    }
+}
