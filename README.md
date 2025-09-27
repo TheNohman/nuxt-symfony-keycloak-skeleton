@@ -1,0 +1,1 @@
+# nuxt-symfony-keycloak-skeleton
