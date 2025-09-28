@@ -26,7 +26,7 @@ All browser requests flow through the Nuxt server, which then makes server-to-se
 
 The application runs entirely in Docker containers:
 
-- `symfony-backend`: PHP 8.4 FPM + Symfony 7 + API Platform (currently using PHP built-in server)
+- `symfony-backend`: FrankenPHP + Symfony 7 + API Platform
 - `nuxt-frontend`: Nuxt 3 with Node.js runtime
 - `keycloak`: Identity provider with admin console
 - `postgres`: Primary database with multi-database setup
@@ -35,7 +35,8 @@ The application runs entirely in Docker containers:
 ### Key Configuration Files
 
 - `docker-compose.yml`: Full container orchestration
-- `backend/Dockerfile`: Custom PHP 8.4 FPM image with extensions (currently using built-in server)
+- `backend/Dockerfile`: Custom FrankenPHP image with PHP extensions
+- `backend/Caddyfile`: FrankenPHP web server configuration
 - `frontend/nuxt.config.ts`: Nuxt configuration (minimal baseline)
 - `docs/ARCHITECTURE.md`: Detailed technical architecture
 
@@ -129,7 +130,7 @@ The application uses environment variables defined in `docker-compose.yml`:
 - `APP_SECRET`: Symfony application secret
 
 ### Frontend (Nuxt)
-- `NUXT_API_BASE_URL`: Internal backend URL (http://backend:8000)
+- `NUXT_API_BASE_URL`: Internal backend URL (http://backend:80)
 - `NUXT_KEYCLOAK_URL`: Internal Keycloak URL for server-side auth
 - `NUXT_PUBLIC_KEYCLOAK_URL`: Public Keycloak URL for browser redirects
 - `NUXT_SESSION_SECRET`: Session encryption key
@@ -159,7 +160,8 @@ backend/                    # Symfony API
 ├── src/                   # PHP application code
 ├── config/                # Symfony configuration
 ├── public/                # Web root
-└── Dockerfile            # Custom PHP FPM image
+├── Caddyfile             # FrankenPHP configuration
+└── Dockerfile            # Custom FrankenPHP image
 
 frontend/                  # Nuxt BFF
 ├── pages/                # Application routes
@@ -177,7 +179,7 @@ docs/                     # Technical documentation
 
 ### Technology Versions
 
-- PHP 8.4 with FPM (currently using built-in development server)
+- PHP 8.3+ with FrankenPHP
 - Symfony 7.3.*
 - API Platform 4.2+
 - Nuxt 4.1+
@@ -188,23 +190,22 @@ docs/                     # Technical documentation
 
 This codebase uses modern versions and follows current best practices for each technology stack.
 
-## Known Issues
+## Recent Changes
 
-### API Platform Static Assets (Current Issue)
-The backend is currently using PHP's built-in development server which doesn't properly serve static assets with correct MIME types. This causes API Platform documentation assets (CSS/JS) to fail loading.
+### FrankenPHP Migration (Completed)
+The backend has been successfully migrated from PHP's built-in development server to FrankenPHP with Caddy configuration.
 
-**Symptoms:**
-- Browser console errors about refused MIME types for swagger-ui assets
-- API documentation page at /api loads but without styling/functionality
+**Benefits:**
+- Proper static asset serving with correct MIME types
+- Built-in compression (zstd, brotli, gzip)
+- Production-ready web server performance
+- HTTP/2 and HTTP/3 support
+- CORS configuration for development
 
-**Solution Implemented:**
-A router script (`backend/router.php`) has been implemented to handle static asset serving with correct MIME types while using PHP's built-in development server. The script:
+**Configuration:**
+- `backend/Caddyfile`: Simple configuration for Symfony with FrankenPHP
+- `backend/Dockerfile`: Uses `dunglas/frankenphp` base image
+- Port mapping: 8080:80 (container runs on port 80)
 
-1. Detects static files (CSS, JS, fonts, images)
-2. Sets appropriate Content-Type headers
-3. Adds cache headers for performance
-4. Passes other requests to Symfony normally
-
-**Alternative Solutions:**
-1. Use a proper web server (nginx, Apache, or FrankenPHP) for production
-2. Access API endpoints directly via REST client instead of the web interface
+**Previous MIME Type Issues:**
+Initial browser console errors about refused MIME types were due to browser caching, not server configuration. The FrankenPHP setup correctly serves all static assets.
