@@ -26,7 +26,7 @@ All browser requests flow through the Nuxt server, which then makes server-to-se
 
 The application runs entirely in Docker containers:
 
-- `symfony-backend`: FrankenPHP + Symfony 7 + API Platform
+- `symfony-backend`: PHP 8.4 FPM + Symfony 7 + API Platform (currently using PHP built-in server)
 - `nuxt-frontend`: Nuxt 3 with Node.js runtime
 - `keycloak`: Identity provider with admin console
 - `postgres`: Primary database with multi-database setup
@@ -35,8 +35,7 @@ The application runs entirely in Docker containers:
 ### Key Configuration Files
 
 - `docker-compose.yml`: Full container orchestration
-- `backend/Caddyfile`: FrankenPHP web server configuration
-- `backend/Dockerfile`: Custom FrankenPHP image with PHP extensions
+- `backend/Dockerfile`: Custom PHP 8.4 FPM image with extensions (currently using built-in server)
 - `frontend/nuxt.config.ts`: Nuxt configuration (minimal baseline)
 - `docs/ARCHITECTURE.md`: Detailed technical architecture
 
@@ -130,7 +129,7 @@ The application uses environment variables defined in `docker-compose.yml`:
 - `APP_SECRET`: Symfony application secret
 
 ### Frontend (Nuxt)
-- `NUXT_API_BASE_URL`: Internal backend URL (http://backend:80)
+- `NUXT_API_BASE_URL`: Internal backend URL (http://backend:8000)
 - `NUXT_KEYCLOAK_URL`: Internal Keycloak URL for server-side auth
 - `NUXT_PUBLIC_KEYCLOAK_URL`: Public Keycloak URL for browser redirects
 - `NUXT_SESSION_SECRET`: Session encryption key
@@ -160,8 +159,7 @@ backend/                    # Symfony API
 ├── src/                   # PHP application code
 ├── config/                # Symfony configuration
 ├── public/                # Web root
-├── Caddyfile             # FrankenPHP configuration
-└── Dockerfile            # Custom FrankenPHP image
+└── Dockerfile            # Custom PHP FPM image
 
 frontend/                  # Nuxt BFF
 ├── pages/                # Application routes
@@ -179,7 +177,7 @@ docs/                     # Technical documentation
 
 ### Technology Versions
 
-- PHP 8.3+ with FrankenPHP
+- PHP 8.4 with FPM (currently using built-in development server)
 - Symfony 7.3.*
 - API Platform 4.2+
 - Nuxt 4.1+
@@ -189,3 +187,24 @@ docs/                     # Technical documentation
 - Redis 7
 
 This codebase uses modern versions and follows current best practices for each technology stack.
+
+## Known Issues
+
+### API Platform Static Assets (Current Issue)
+The backend is currently using PHP's built-in development server which doesn't properly serve static assets with correct MIME types. This causes API Platform documentation assets (CSS/JS) to fail loading.
+
+**Symptoms:**
+- Browser console errors about refused MIME types for swagger-ui assets
+- API documentation page at /api loads but without styling/functionality
+
+**Solution Implemented:**
+A router script (`backend/router.php`) has been implemented to handle static asset serving with correct MIME types while using PHP's built-in development server. The script:
+
+1. Detects static files (CSS, JS, fonts, images)
+2. Sets appropriate Content-Type headers
+3. Adds cache headers for performance
+4. Passes other requests to Symfony normally
+
+**Alternative Solutions:**
+1. Use a proper web server (nginx, Apache, or FrankenPHP) for production
+2. Access API endpoints directly via REST client instead of the web interface

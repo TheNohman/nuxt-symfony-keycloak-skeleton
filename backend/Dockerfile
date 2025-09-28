@@ -1,38 +1,35 @@
-# FrankenPHP container for Symfony application
-FROM dunglas/frankenphp:1-php8.3
+FROM dunglas/frankenphp
 
-# Install additional PHP extensions needed for Symfony
-RUN install-php-extensions \
-    pdo_pgsql \
-    intl \
-    opcache \
-    redis \
-    zip
+# Installation des dépendances système supplémentaires si nécessaires
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
+# Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Create non-root user
-RUN groupadd -g 1000 appuser && \
-    useradd -r -u 1000 -g appuser appuser
-
-# Set working directory
+# Configuration du répertoire de travail
 WORKDIR /app
 
-# Copy application files
-COPY --chown=appuser:appuser . /app
+# Copie des fichiers du projet
+COPY . .
 
-# Change ownership of the working directory
-RUN chown -R appuser:appuser /app
+# Installation des dépendances
+RUN composer install --no-dev --optimize-autoloader
 
-# Switch to non-root user
-USER appuser
+# Création du répertoire des médias avec bonnes permissions
+RUN mkdir -p /app/public/media && chmod 777 /app/public/media
 
-# Expose port 80 for FrankenPHP
-EXPOSE 80
+# Configuration des permissions
+RUN chown -R www-data:www-data /app
 
-# Copy Caddyfile
-COPY --chown=appuser:appuser Caddyfile /etc/caddy/Caddyfile
+# Copie du Caddyfile
+COPY Caddyfile /etc/caddy/Caddyfile
 
-# Start FrankenPHP server
+# Exposition des ports HTTP, HTTPS et HTTP/3
+EXPOSE 80 443 443/udp
+
+# FrankenPHP démarre automatiquement avec le Caddyfile
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

@@ -1,49 +1,31 @@
-{
-    # Enable FrankenPHP
-    frankenphp
-    # Enable Symfony worker mode for better performance
-    # Uncomment the line below when ready for production
-    # frankenphp {
-    #     worker ./public/index.php
-    # }
-}
-
+# Configuration simple pour FrankenPHP avec Symfony
 :80 {
-    # Document root
-    root * /app/public
+	# Racine du projet Symfony
+	root * /app/public
 
-    # Enable PHP processing with FrankenPHP
-    php
+	# Activation de la compression
+	encode zstd br gzip
 
-    # Handle Symfony routes
-    try_files {path} /index.php
+	# En-têtes CORS pour le développement
+	header {
+		Access-Control-Allow-Origin "*"
+		Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+		Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+	}
 
-    # Enable gzip compression
-    encode gzip
+	# Gestion des requêtes OPTIONS (preflight CORS)
+	@options method OPTIONS
+	respond @options 204
 
-    # Logging
-    log {
-        output stdout
-        format console
-    }
+	# Configuration PHP avec FrankenPHP
+	php_server
 
-    # Security headers
-    header {
-        # Remove server information
-        -Server
-        # Add security headers
-        X-Content-Type-Options nosniff
-        X-Frame-Options DENY
-        X-XSS-Protection "1; mode=block"
-        Referrer-Policy strict-origin-when-cross-origin
-    }
-
-    # Handle assets and static files
-    @static {
-        file
-        path *.css *.js *.png *.jpg *.jpeg *.gif *.svg *.ico *.woff *.woff2 *.ttf *.eot
-    }
-    handle @static {
-        header Cache-Control "public, max-age=31536000"
-    }
+	# Logs pour le développement
+	log {
+		output stdout
+		format console
+		level INFO
+	}
 }
