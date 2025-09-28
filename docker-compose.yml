@@ -119,17 +119,15 @@ services:
       NUXT_REDIS_URL: redis://redis:6379
       # Public configuration for client
       NUXT_PUBLIC_APP_URL: http://localhost:3000
-      # Keycloak configuration for server-side auth
-      NUXT_KEYCLOAK_URL: http://keycloak:8080
-      NUXT_KEYCLOAK_REALM: skeleton
-      NUXT_KEYCLOAK_CLIENT_ID: nuxt-frontend
-      NUXT_KEYCLOAK_CLIENT_SECRET: ""
+      # Session configuration
+      NUXT_SESSION_PASSWORD: 435faf74e6f04fc0baf3050b40a3b83a
+      # Keycloak OAuth configuration (server-side)
+      NUXT_OAUTH_KEYCLOAK_CLIENT_ID: nuxt-frontend
+      NUXT_OAUTH_KEYCLOAK_CLIENT_SECRET: "" # Configure this in Keycloak admin
+      NUXT_OAUTH_KEYCLOAK_SERVER_URL: http://keycloak:8080
+      NUXT_OAUTH_KEYCLOAK_REALM: skeleton
       # Public Keycloak URL for browser redirects
       NUXT_PUBLIC_KEYCLOAK_URL: http://localhost:8090
-      NUXT_PUBLIC_KEYCLOAK_REALM: skeleton
-      NUXT_PUBLIC_KEYCLOAK_CLIENT_ID: nuxt-frontend
-      # Session configuration
-      NUXT_SESSION_SECRET: session-secret-key-change-in-production
     volumes:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules
